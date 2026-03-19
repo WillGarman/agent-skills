@@ -9,8 +9,6 @@ Code should be skimmable. A reader should understand what a function does withou
 
 This skill is a cleanup pass. Run it on changed code before every PR.
 
-Source: [@gabriel1's code readability rules](https://x.com/gabriel1/status/1902049241707389100) (54K views, 745 likes, Mar 2026)
-
 ## The Rules
 
 ### 1. Write skimmable code
@@ -143,44 +141,39 @@ function getDisplayName(user: User): string {
 
 If your types are wrong and `user` actually can be null, the fix is to make the type `User | null` and handle it at the boundary where the data enters your system, not inside every function that touches it.
 
-### 6. Use asserts when loading data
+### 6. Assert at boundaries, be strict about parameters
 
-Validate at the boundary. When data enters your system (API response, file read, URL param), assert its shape aggressively. After validation, trust it everywhere downstream. Don't let things be optional if not strictly required.
+When data enters your system, don't silently fill in defaults for missing fields. That hides bugs. If the config is missing `apiUrl`, that's a deployment problem — crash, don't invent a default URL that will fail differently later.
 
 ```ts
-// BEFORE: optional everything, defensive everywhere
-function loadConfig(raw: unknown): Config {
-  const config = raw as Partial<Config>;
-  return {
-    apiUrl: config.apiUrl ?? "https://default.api",
-    timeout: config.timeout ?? 5000,
-    retries: config.retries ?? 3,
-  };
+// BEFORE: silently papers over missing config with defaults
+function getApiUrl(config: Partial<Config>): string {
+  return config.apiUrl ?? "https://default.api";
 }
 
-// AFTER: assert shape at boundary, require everything
-function loadConfig(raw: unknown): Config {
-  assert(typeof raw === "object" && raw !== null, "Config must be an object");
-  assert("apiUrl" in raw && typeof raw.apiUrl === "string", "Config missing apiUrl");
-  assert("timeout" in raw && typeof raw.timeout === "number", "Config missing timeout");
-  assert("retries" in raw && typeof raw.retries === "number", "Config missing retries");
-  return raw as Config;
+// AFTER: if it's missing, that's a bug — find it now
+function getApiUrl(config: Config): string {
+  return config.apiUrl; // Config requires apiUrl, validated at load time
 }
 ```
 
-Or use a schema validation library (Zod, Valibot) at the boundary and get the same thing with less code:
+Same principle for function parameters. Be opinionated: if your function needs a value, require it. Don't make things optional and then scramble to handle the missing case.
 
 ```ts
-const ConfigSchema = z.object({
-  apiUrl: z.string(),
-  timeout: z.number(),
-  retries: z.number(),
-});
+// BEFORE: optional param, defensive fallback
+function getConversation(id?: string) {
+  const conversationId = id ?? store.getState().currentConversationId;
+  assert(conversationId, "No conversation ID");
+  return db.get(conversationId);
+}
 
-function loadConfig(raw: unknown): Config {
-  return ConfigSchema.parse(raw); // throws with clear message on invalid shape
+// AFTER: caller is explicit, function is simple
+function getConversation(id: string) {
+  return db.get(id);
 }
 ```
+
+If you're loading untyped data (API response, JSON file, URL params), validate the shape once at the boundary with asserts or a schema library, then trust the types everywhere downstream.
 
 ### 7. Remove anything not strictly required
 

@@ -7,11 +7,6 @@ description: Strict useEffect discipline for React. Treats direct useEffect as e
 
 Direct `useEffect` is banned until proven necessary. Every `useEffect` in a component body is a claim that React's rendering model isn't enough. That claim is wrong ~90% of the time.
 
-This skill is built from three sources:
-- React official docs: [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect)
-- Arcjet's production experience banning useEffect across their codebase
-- Real infinite-loop bugs caused by unstable callbacks in useEffect dep arrays
-
 ## The Rule
 
 1. **Never reach for useEffect first.** Exhaust every alternative below.
