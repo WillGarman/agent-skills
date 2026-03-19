@@ -2,6 +2,10 @@
 
 Strict useEffect discipline for React. Treats direct `useEffect` as effectively banned. Every `useEffect` must justify its existence, and when one is genuinely needed, it lives in a named custom hook.
 
+```
+npx skills add WillGarman/agent-skills --skill do-you-need-useEffect
+```
+
 ## Sources
 
 - [React: You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect)

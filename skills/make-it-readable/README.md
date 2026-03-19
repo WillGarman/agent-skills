@@ -2,6 +2,10 @@
 
 Code readability cleanup pass. Run on changed code before every PR.
 
+```
+npx skills add WillGarman/agent-skills --skill make-it-readable
+```
+
 ## Source
 
 - [@gabriel1: make code skimmable, run a separate cleanup prompt before every pr](https://x.com/gabriel1/status/1902049241707389100) (54K views, 745 likes, Mar 2026)
